@@ -9,6 +9,7 @@ const Flags = struct {
     squeeze: bool = false,
 };
 
+
 pub fn main() !void {
     var allocator = std.heap.page_allocator;
     var args = try std.process.argsAlloc(allocator);
@@ -19,6 +20,7 @@ pub fn main() !void {
 
     var flags = Flags{};
 
+    var file: std.fs.File = undefined;
 
     for (args[1..args.len]) |arg| {
         if(compare(arg, "-h") or compare(arg, "--help")){
@@ -39,12 +41,27 @@ pub fn main() !void {
         else if(compare(arg, "-s") or compare(arg, "--squeeze-blank")){
             flags.squeeze = true;
         }
+        else{
+            file = try std.fs.cwd().openFile(arg, .{});
+        }
     }
 
     if(flags.help)
         printHelp();
 
+    try printFile(file);
+}
 
+fn printFile(file: std.fs.File) !void {
+    var buffer: [1024]u8 = undefined;
+    var read: usize = undefined;
+
+    while(true){
+        read = try file.read(buffer[0..]);
+        if(read == 0)
+            break;
+        std.debug.print("{s}", .{buffer[0..read]});
+    }
 }
 
 fn compare(str1: []const u8, str2: []const u8) bool {
