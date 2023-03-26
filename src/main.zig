@@ -13,11 +13,6 @@ const Flags = struct {
 pub fn main() !void {
     var allocator = std.heap.page_allocator;
     var args = try std.process.argsAlloc(allocator);
-
-    for (args[1..args.len]) |arg| {
-        std.debug.print("{s}\n", .{arg});
-    }
-
     var flags = Flags{};
 
     var file: std.fs.File = undefined;
@@ -26,7 +21,7 @@ pub fn main() !void {
         if(compare(arg, "-h") or compare(arg, "--help")){
             flags.help = true;
         }
-        else if(compare(arg, "-v") or compare(arg, "--version")){
+        else if(compare(arg, "--version")){
             flags.version = true;
         }
         else if(compare(arg, "-b") or compare(arg, "--number-nonblank")){
@@ -49,20 +44,65 @@ pub fn main() !void {
     if(flags.help)
         printHelp();
 
-    try printFile(file);
+    try printFile(file, flags);
 }
 
-fn printFile(file: std.fs.File) !void {
-    var buffer: [1024]u8 = undefined;
-    var read: usize = undefined;
 
-    while(true){
-        read = try file.read(buffer[0..]);
-        if(read == 0)
-            break;
-        std.debug.print("{s}", .{buffer[0..read]});
+fn printFile(file: std.fs.File, flags: Flags) !void {
+    var buf_reader = std.io.bufferedReader(file.reader());
+    var in_stream = buf_reader.reader();
+    var buf: [1024*1024]u8 = undefined;
+    var i: usize = 0;
+
+    const prev_line = struct {
+        var was_empty: bool = false;
+    };
+
+    while (try in_stream.readUntilDelimiterOrEof(&buf, '\n')) |line| {
+
+        if(flags.number){
+            std.debug.print("{d} ", .{i});
+            i += 1;
+        }
+        else if(flags.non_blank and line.len != 0){
+            std.debug.print("{d} ", .{i});
+            i += 1;
+        }
+
+        if(flags.squeeze and line.len == 0){
+            if(prev_line.was_empty)
+                continue;
+            prev_line.was_empty = true;
+        }
+        else{
+            prev_line.was_empty = false;
+        }
+
+        if(flags.non_print){
+            printNonPrintable(line);
+        }
+        else{
+            std.debug.print("{s}\n", .{line});
+        }
+    }
+
+}
+
+fn printNonPrintable(line: []const u8) void {
+    for(line) |char| {
+        if(nonPrintable(char)){
+            std.debug.print("{c}", .{'@'});
+        }
+        else{
+            std.debug.print("{c}", .{char});
+        }
     }
 }
+
+fn nonPrintable(char: u8) bool {
+    return char < 32 or char == 127;
+}
+
 
 fn compare(str1: []const u8, str2: []const u8) bool {
     if(str1.len != str2.len)
@@ -72,10 +112,8 @@ fn compare(str1: []const u8, str2: []const u8) bool {
         if(char1 != str2[i])
             return false;
     }
-
     return true;
 }
-
 
 
 fn printHelp() void
@@ -85,9 +123,9 @@ fn printHelp() void
         std.debug.print("  -b, --number-nonblank    number nonempty output lines, overrides -n\n", .{});
         std.debug.print("  -n, --number             number all output lines\n", .{});
         std.debug.print("  -s, --squeeze-blank      suppress repeated empty output lines\n", .{});
-        std.debug.print("  -v, --show-nonprinting   use ^ and M- notation, except for LFD and TAB\n", .{});
+        std.debug.print("  -v, --show-nonprinting   show non-printing chars as @\n", .{});
         std.debug.print("  -h  --help     display this help and exit\n", .{});
-        std.debug.print("  -v  --version  output version information and exit\n", .{});
+        std.debug.print("      --version  output version information and exit\n", .{});
         std.debug.print("Examples:\n", .{});
         std.debug.print("  zat f - g  Output f's contents, then standard input, then g's contents.\n", .{});
         std.debug.print("  zat        Copy standard input to standard output.\n", .{});
