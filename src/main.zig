@@ -13,6 +13,7 @@ help: bool = false,
 pub fn main() !void {
     var allocator = std.heap.page_allocator;
     var args = try std.process.argsAlloc(allocator);
+    defer std.process.argsFree(allocator, args);
     var flags = Flags{};
 
     var file: std.fs.File = undefined;
