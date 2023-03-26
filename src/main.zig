@@ -17,6 +17,8 @@ pub fn main() !void {
 
     var file: std.fs.File = undefined;
 
+    const version = "0.1.0";
+
     for (args[1..args.len]) |arg| {
         if(compare(arg, "-h") or compare(arg, "--help")){
             flags.help = true;
@@ -41,10 +43,15 @@ pub fn main() !void {
         }
     }
 
-    if(flags.help)
+    if(flags.help){
         printHelp();
-
-    try printFile(file, flags);
+    }
+    else if(flags.version){
+        std.debug.print("{s}\n", .{version});
+    }
+    else{
+        try printFile(file, flags);
+    }
 }
 
 
@@ -129,5 +136,4 @@ fn printHelp() void
         std.debug.print("Examples:\n", .{});
         std.debug.print("  zat f - g  Output f's contents, then standard input, then g's contents.\n", .{});
         std.debug.print("  zat        Copy standard input to standard output.\n", .{});
-
 }
