@@ -67,6 +67,15 @@ fn printFile(file: std.fs.File, flags: Flags) !void {
 
     while (try in_stream.readUntilDelimiterOrEof(&buf, '\n')) |line| {
 
+        if(flags.squeeze and line.len == 0){
+            if(prev_line.was_empty)
+                continue;
+            prev_line.was_empty = true;
+        }
+        else{
+            prev_line.was_empty = false;
+        }
+
         if(flags.number){
             std.debug.print("{d} ", .{i});
             i += 1;
@@ -76,14 +85,6 @@ fn printFile(file: std.fs.File, flags: Flags) !void {
             i += 1;
         }
 
-        if(flags.squeeze and line.len == 0){
-            if(prev_line.was_empty)
-                continue;
-            prev_line.was_empty = true;
-        }
-        else{
-            prev_line.was_empty = false;
-        }
 
         if(flags.non_print){
             printNonPrintable(line);
