@@ -1,12 +1,12 @@
 const std = @import("std");
 
 const Flags = struct {
-    help: bool = false,
-    version: bool = false,
-    non_blank: bool = false,
-    non_print: bool = false,
-    number: bool = false,
-    squeeze: bool = false,
+help: bool = false,
+          version: bool = false,
+          non_blank: bool = false,
+          non_print: bool = false,
+          number: bool = false,
+          squeeze: bool = false,
 };
 
 
@@ -124,17 +124,16 @@ fn compare(str1: []const u8, str2: []const u8) bool {
 }
 
 
-fn printHelp() void
-{
-        std.debug.print("Usage: zat [OPTION]... [FILE]...\n", .{});
-        std.debug.print("Concatenate FILE(s) to standard output.\n", .{});
-        std.debug.print("  -b, --number-nonblank    number nonempty output lines, overrides -n\n", .{});
-        std.debug.print("  -n, --number             number all output lines\n", .{});
-        std.debug.print("  -s, --squeeze-blank      suppress repeated empty output lines\n", .{});
-        std.debug.print("  -v, --show-nonprinting   show non-printing chars as @\n", .{});
-        std.debug.print("  -h  --help     display this help and exit\n", .{});
-        std.debug.print("      --version  output version information and exit\n", .{});
-        std.debug.print("Examples:\n", .{});
-        std.debug.print("  zat f - g  Output f's contents, then standard input, then g's contents.\n", .{});
-        std.debug.print("  zat        Copy standard input to standard output.\n", .{});
+fn printHelp() void{
+    std.debug.print("Usage: zat [OPTION]... [FILE]...\n", .{});
+    std.debug.print("Concatenate FILE(s) to standard output.\n", .{});
+    std.debug.print("  -b, --number-nonblank    number nonempty output lines, overrides -n\n", .{});
+    std.debug.print("  -n, --number             number all output lines\n", .{});
+    std.debug.print("  -s, --squeeze-blank      suppress repeated empty output lines\n", .{});
+    std.debug.print("  -v, --show-nonprinting   show non-printing chars as @\n", .{});
+    std.debug.print("  -h  --help     display this help and exit\n", .{});
+    std.debug.print("      --version  output version information and exit\n", .{});
+    std.debug.print("Examples:\n", .{});
+    std.debug.print("  zat f - g  Output f's contents, then standard input, then g's contents.\n", .{});
+    std.debug.print("  zat        Copy standard input to standard output.\n", .{});
 }
